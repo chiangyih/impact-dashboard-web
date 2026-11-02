@@ -1007,25 +1007,32 @@
   }
 
   function renderMetrics(bundle) {
-    $("analysisMetrics").innerHTML = bundle.analysis.map((item) => {
+    const available = [];
+    const unavailable = [];
+    for (const item of bundle.analysis) {
       const opticalRecord = bundle.streams.OPTICAL[0];
       const speedGate = item.metric_id === "TWO_GATE_AVERAGE_SPEED" ? opticalSpeedGate(bundle, opticalRecord, item) : { allowed: true };
       const computed = item.calculation_state === "COMPUTED" && item.semantic_validation === "VALID" &&
         item.source_public_snapshot_revision === bundle.public_snapshot_revision && item.method_revision &&
         Number.isFinite(item.value) && speedGate.allowed;
-      const value = computed ? `${numericText(item.value)} ${item.unit}` : "UNAVAILABLE";
+      const value = computed ? `${numericText(item.value)} ${item.unit}` : "無法顯示";
       const displayReasons = !speedGate.allowed
         ? speedGate.reason
-        : item.reason_codes.length ? reasonText(item.reason_codes) : "合成 fixture 未附原因碼";
-      return `<article class="metric-card ${computed ? "metric-computed" : ""}">
+        : item.reason_codes.length ? reasonText(item.reason_codes) : "合成資料未附原因碼";
+      const card = `<article class="metric-card ${computed ? "metric-computed" : ""}">
         <span class="mini-tag synthetic-tag">SYNTHETIC</span>
         <h4>${escapeHtml(METRIC_LABELS[item.metric_id] || item.metric_id)}</h4>
         <strong class="metric-value">${escapeHtml(value)}</strong>
-        <span class="metric-meta">Calculation: ${escapeHtml(item.calculation_state)} · Semantic: ${escapeHtml(item.semantic_validation)}</span>
-        <span class="metric-meta">Eligibility: ${escapeHtml(item.metric_eligibility)} · Physical result: ${escapeHtml(item.physical_result)}</span>
-        <span class="metric-reason">Reason: ${escapeHtml(displayReasons)}</span>
+        <span class="metric-meta">資格：${escapeHtml(item.metric_eligibility)} · 物理結果：${escapeHtml(item.physical_result)}</span>
+        <span class="metric-meta">計算狀態：${escapeHtml(item.calculation_state)} · 語義檢核：${escapeHtml(item.semantic_validation)}</span>
+        <span class="metric-reason">原因：${escapeHtml(displayReasons)}</span>
       </article>`;
-    }).join("");
+      (computed ? available : unavailable).push(card);
+    }
+    const unavailableGroup = unavailable.length
+      ? `<details class="unavailable-metrics"><summary>無法顯示的計算項目（${unavailable.length}）</summary><div class="metric-grid">${unavailable.join("")}</div></details>`
+      : "";
+    $("analysisMetrics").innerHTML = available.join("") + unavailableGroup;
   }
 
   function previousIndexBreak(records, index) {
@@ -1102,21 +1109,21 @@
     }
     const gate = opticalSpeedGate(bundle, record, metricItem);
     const gateSummary = gate.allowed
-      ? "上游 fixture 通過結構與語義門控；顯示的速度來自合約 metric，不由前端計算。"
+      ? "來源結果通過結構與語義檢核；速度由資料來源提供。"
       : `速度不可用：${gate.reason}${record.semantic_validation !== "VALID" ? `來源語義 ${record.semantic_validation}。` : ""}`;
     $("opticalSummary").textContent = `SYNTHETIC · ${gateSummary}`;
     const metricValue = gate.allowed
       ? `${Number(metricItem.value).toFixed(6)} m/s · 兩閘區間平均速度`
-      : "UNAVAILABLE · 不衍生速度";
+      : "無法顯示 · 不衍生速度";
     const values = [
-      ["Upper seen / time", `${record.upper_seen} · ${record.upper_us === null ? "UNKNOWN" : `${record.upper_us} us`}`],
-      ["Lower seen / time", `${record.lower_seen} · ${record.lower_us === null ? "UNKNOWN" : `${record.lower_us} us`}`],
-      ["dt_us", record.dt_us === null ? "UNKNOWN" : numericText(record.dt_us)],
-      ["Semantic validation", record.semantic_validation],
-      ["Configured distance", record.configured_distance_mm === null ? "UNKNOWN" : `${record.configured_distance_mm} mm · 設定值`],
-      ["Upstream speed metric", metricValue],
-      ["Metric eligibility", metricItem ? metricItem.metric_eligibility : "UNKNOWN"],
-      ["Reason", !gate.allowed ? gate.reason : record.reason_codes.length ? reasonText(record.reason_codes) : metricItem ? reasonText(metricItem.reason_codes) : "未提供"]
+      ["上閘觸發／時間", `${record.upper_seen} · ${record.upper_us === null ? "UNKNOWN" : `${record.upper_us} us`}`],
+      ["下閘觸發／時間", `${record.lower_seen} · ${record.lower_us === null ? "UNKNOWN" : `${record.lower_us} us`}`],
+      ["兩閘時間差", record.dt_us === null ? "UNKNOWN" : `${numericText(record.dt_us)} us`],
+      ["語義檢核", record.semantic_validation],
+      ["設定距離", record.configured_distance_mm === null ? "UNKNOWN" : `${record.configured_distance_mm} mm · 設定值`],
+      ["兩閘平均速度", metricValue],
+      ["計算結果資格", metricItem ? metricItem.metric_eligibility : "UNKNOWN"],
+      ["原因", !gate.allowed ? gate.reason : record.reason_codes.length ? reasonText(record.reason_codes) : metricItem ? reasonText(metricItem.reason_codes) : "未提供"]
     ];
     $("opticalValues").innerHTML = values.map(([label, value]) => `<div class="optical-value"><span>${escapeHtml(label)} · SYNTHETIC</span><strong>${escapeHtml(value)}</strong></div>`).join("");
   }

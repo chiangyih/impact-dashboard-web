@@ -22,7 +22,6 @@ html { scroll-behavior: smooth; }
 
 body {
   margin: 0;
-  min-width: 320px;
   color: var(--ink);
   background: var(--canvas);
   line-height: 1.55;
@@ -362,3 +361,28 @@ select:hover { border-color: #8fa7c2; }
   html { scroll-behavior: auto; }
   *, *::before, *::after { transition-duration: .01ms !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; }
 }
+
+/* Measurement-first layout; supporting information remains available on demand. */
+.secondary-section { margin-top: 28px; padding: 0 20px; border: 1px solid var(--line); border-radius: 14px; background: var(--paper); box-shadow: var(--shadow); }
+.secondary-section > summary { padding: 17px 0; cursor: pointer; color: var(--navy); font-weight: 750; }
+.secondary-section > summary:focus-visible { outline: 3px solid #82b3ff; outline-offset: 3px; }
+.secondary-section[open] { padding-bottom: 20px; }
+.secondary-section .dashboard-section { margin-top: 0; }
+.history-details .history-cards-grid, .history-details .history-detail-grid { margin-top: 0; }
+.history-section > .section-heading { margin-top: 0; }
+.history-section > .section-heading .section-kicker { display: none; }
+.history-section .optical-card { margin-top: 20px; }
+.metric-value { font-variant-numeric: tabular-nums; }
+@media (max-width: 600px) {
+  .secondary-section { padding-inline: 14px; }
+  .history-scope-label { white-space: normal; }
+}
+.unavailable-metrics { grid-column: 1 / -1; min-width: 0; border: 1px solid var(--line); border-radius: 10px; padding: 0 14px; }
+.unavailable-metrics > summary { padding: 12px 0; cursor: pointer; color: var(--navy); font-weight: 700; }
+.unavailable-metrics > summary:focus-visible { outline: 3px solid #82b3ff; outline-offset: 3px; }
+.unavailable-metrics[open] { padding-bottom: 14px; }
+.selection-status-grid { display: flex; flex-wrap: wrap; gap: 8px 18px; padding: 10px 14px; border: 1px solid var(--line); border-radius: 10px; background: white; }
+.selection-status-grid .selection-card { display: flex; flex-direction: row; flex-wrap: wrap; align-items: center; gap: 6px; flex: 1 1 200px; padding: 0; border: 0; background: none; box-shadow: none; min-width: 0; }
+.selection-status-grid .card-eyebrow { margin: 0; letter-spacing: 0; color: var(--muted); }
+.selection-status-grid strong { overflow-wrap: anywhere; }
+.selection-status-grid #historyStateText { color: var(--muted); }

@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="referrer" content="no-referrer">
-  <title>撞擊測試｜即時與歷史 Dashboard 原型</title>
+  <title>撞擊測試｜量測值與計算值</title>
   <link rel="stylesheet" href="styles.css">
   <script src="app.js" defer></script>
 </head>
@@ -15,31 +15,141 @@
       <div class="brand-mark" aria-hidden="true"><span></span><span></span><span></span></div>
       <div>
         <p class="eyebrow">ESP32 IMPACT OBSERVATORY</p>
-        <h1>撞擊測試 Dashboard</h1>
+        <h1>撞擊測試量測看板</h1>
       </div>
-      <span class="prototype-chip">本機原型</span>
+      <span class="prototype-chip">合成示範</span>
     </div>
   </header>
 
   <div class="synthetic-ribbon" role="note" aria-label="合成資料警示">
     <span class="synthetic-stamp">SYNTHETIC</span>
-    <span><strong>合成資料。本機互動原型，未連接真實量測來源；不代表量測、校正或材料驗收通過。</strong></span>
+    <span><strong>合成示範資料，未連接實際量測；不代表校正或材料驗收通過。</strong></span>
   </div>
 
   <main id="main-content" class="page-main">
-    <section class="intro-panel" aria-labelledby="intro-title">
-      <div class="intro-copy">
-        <p class="eyebrow">公開看板介面草稿 · 無外部連線</p>
-        <h2 id="intro-title">即時觀測與已封存歷史，分開核對。</h2>
-        <p>這個原型只讀取本機內嵌的合成情境。即時摘要是暫態示範；歷史紀錄是獨立的合成發布版本。</p>
+    <section class="dashboard-section history-section" id="history-section" aria-labelledby="history-title">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow section-kicker"><span class="section-index">01</span> MEASUREMENTS</p>
+          <h2 id="history-title">量測值與計算值 <span class="heading-note">合成歷史示範</span></h2>
+        </div>
+        <span class="history-scope-label">選擇紀錄後查看結果</span>
       </div>
-      <div class="scope-card">
-        <span class="scope-dot" aria-hidden="true"></span>
-        <div><strong>資料範圍</strong><span>本機合成 fixtures</span></div>
-        <span class="scope-note">無 API · 無 Google · 無 ESP32</span>
+
+      <article class="card history-picker">
+        <div class="picker-copy">
+          <p class="card-eyebrow">LOCAL HISTORY SELECTION</p>
+          <h3>選擇合成紀錄</h3>
+          <p>選擇一筆紀錄，查看量測與計算結果。</p>
+        </div>
+        <div class="picker-control">
+          <label for="historySelect">本機歷史情境</label>
+          <select id="historySelect">
+            <option value="">選擇合成歷史紀錄</option>
+            <optgroup label="合成歷史紀錄">
+              <option value="DEMO_RUN_TRIAL_001">DEMO_RUN_TRIAL_001 · TRIAL</option>
+              <option value="DEMO_RUN_SPEED_001">DEMO_RUN_SPEED_001 · SPEED</option>
+            </optgroup>
+            <optgroup label="本機狀態案例（無網路請求）">
+              <option value="__empty">索引為空</option>
+              <option value="__notFound">所選紀錄 NOT FOUND</option>
+              <option value="__error">模擬讀取 ERROR</option>
+              <option value="__version">版本不相容</option>
+            </optgroup>
+          </select>
+        </div>
+      </article>
+
+      <div class="selection-status-grid">
+        <article class="card selection-card">
+          <p class="card-eyebrow">要求查看</p>
+          <strong id="requestedRun">尚未選擇</strong>
+
+        </article>
+        <article class="card selection-card actual-card">
+          <p class="card-eyebrow">實際顯示</p>
+          <strong id="displayedRun">尚未載入</strong>
+
+        </article>
+        <article class="card selection-card state-card">
+          <p class="card-eyebrow">狀態</p>
+          <span id="historyStateBadge" class="status-badge status-unknown">NO_SELECTION</span>
+          <span id="historyStateText">選擇一筆合成歷史紀錄。</span>
+        </article>
+      </div>
+
+      <div id="historyEmptyState" class="empty-state card">
+        <div class="empty-symbol" aria-hidden="true">↗</div>
+        <div><h3>選擇合成歷史紀錄</h3><p>尚未選輪。原型不會自動挑最新或第一筆資料。</p></div>
+        <span class="mini-tag synthetic-tag">SYNTHETIC</span>
+      </div>
+
+      <div id="historyContent" hidden>
+        <article class="card optical-card">
+          <div class="card-title-row"><div><p class="card-eyebrow">SYNTHETIC · GATE EVENTS</p><h3>Optical 事件與上游換算結果</h3></div><span class="mini-tag synthetic-tag">SYNTHETIC</span></div>
+          <p id="opticalSummary" class="optical-summary">尚無合成 Optical 紀錄。</p>
+          <div class="optical-values" id="opticalValues"></div>
+          <p class="chart-footnote">只有合約中的上游 metric fixture 可顯示兩閘區間平均速度；此值不代表接觸速度、精度或材料效果。</p>
+        </article>
+
+        <section class="card analysis-directory" aria-labelledby="analysis-title">
+          <div class="section-subheading analysis-subhead">
+            <div><p class="card-eyebrow">ANALYSIS DIRECTORY · SYNTHETIC</p><h3 id="analysis-title">計算結果</h3></div>
+            <span class="subheading-note">計算、語義、資格與物理結果分開</span>
+          </div>
+          <p class="analysis-intro">顯示可用結果；未提供或不符合條件的結果保留原因。</p>
+          <div id="analysisMetrics" class="metric-grid"></div>
+        </section>
+
+          <article class="card run-card quality-card">
+            <div class="card-title-row"><div><p class="card-eyebrow">QUALITY SCOPE</p><h3>資料品質</h3></div><span id="qualityBadge" class="status-badge status-neutral">示範值</span></div>
+            <dl id="historyQuality" class="detail-list"></dl>
+          </article>
+
+        <div class="history-charts-grid">
+          <article class="card chart-card history-chart-card">
+            <div class="card-title-row chart-title-row"><div><p class="card-eyebrow">SYNTHETIC · SAVED RECORDS</p><h3>ACC 三軸 · RAW counts</h3></div><span class="mini-tag synthetic-tag">SYNTHETIC</span></div>
+            <p id="accAxisCaption" class="chart-caption">依來源讀出時刻繪製；軸線不是撞擊方向。</p>
+            <div id="accChart" class="chart-frame empty-chart"></div>
+            <div class="table-wrap"><table class="data-table"><caption>ACC 合成資料表（SYNTHETIC）</caption><thead><tr><th scope="col">Saved ordinal<br><small>非 ADC 序號</small></th><th scope="col">t_read_us</th><th scope="col">X raw counts</th><th scope="col">Y raw counts</th><th scope="col">Z raw counts</th></tr></thead><tbody id="accRows"></tbody></table></div>
+          </article>
+          <article class="card chart-card history-chart-card">
+            <div class="card-title-row chart-title-row"><div><p class="card-eyebrow">SYNTHETIC · SAVED RECORDS</p><h3>HX · RAW counts</h3></div><span class="mini-tag synthetic-tag">SYNTHETIC</span></div>
+            <p id="hxAxisCaption" class="chart-caption">未校正值只表示計數；SAT 保留原旗標。</p>
+            <div id="hxChart" class="chart-frame empty-chart"></div>
+            <div class="table-wrap"><table class="data-table"><caption>HX 合成資料表（SYNTHETIC）</caption><thead><tr><th scope="col">Saved ordinal<br><small>非 ADC 序號</small></th><th scope="col">t_read_us</th><th scope="col">HX raw counts</th><th scope="col">SAT</th><th scope="col">Record kind</th></tr></thead><tbody id="hxRows"></tbody></table></div>
+          </article>
+        </div>
+
+        <details class="secondary-section history-details">
+          <summary>紀錄狀態與來源</summary>
+        <div class="history-cards-grid">
+          <article class="card run-card">
+            <div class="card-title-row"><div><p class="card-eyebrow">RUN IDENTITY</p><h3>歷史身分</h3></div><span class="mini-tag synthetic-tag">SYNTHETIC</span></div>
+            <dl id="historyIdentity" class="detail-list"></dl>
+          </article>
+          <article class="card run-card storage-card">
+            <div class="card-title-row"><div><p class="card-eyebrow">STORAGE ≠ QUALIFICATION</p><h3>保存與發布</h3></div><span id="storageBadge" class="status-badge status-synthetic">合成 assertion</span></div>
+            <dl id="historyStorage" class="detail-list"></dl>
+          </article>
+        </div>
+
+        <div class="history-detail-grid">
+          <article class="card chart-card">
+            <div class="card-title-row"><div><p class="card-eyebrow">REPRODUCIBLE PUBLIC PROJECTION</p><h3>合成來源詳情</h3></div><span class="mini-tag synthetic-tag">SYNTHETIC</span></div>
+            <dl id="historyProvenance" class="detail-list"></dl>
+          </article>
+          <article class="card download-card">
+            <div><p class="card-eyebrow">LOCAL DOWNLOAD</p><h3>下載目前顯示版本</h3><p>只下載本機選定的合成公開投影；檔名與內容均保留 synthetic 標記。</p></div>
+            <button id="downloadHistory" class="button button-secondary" type="button" disabled>下載合成紀錄 JSON</button>
+            <span id="downloadStatus" class="download-status">未選擇紀錄。</span>
+          </article>
+        </div>
+        </details>
       </div>
     </section>
-
+    <details class="secondary-section">
+      <summary>即時觀測示範與診斷</summary>
     <section class="dashboard-section live-section" id="live-section" aria-labelledby="live-title">
       <div class="section-heading">
         <div>
@@ -135,129 +245,13 @@
       </div>
     </section>
 
-    <section class="dashboard-section history-section" id="history-section" aria-labelledby="history-title">
-      <div class="section-heading">
-        <div>
-          <p class="eyebrow section-kicker"><span class="section-index">02</span> PUBLISHED HISTORY</p>
-          <h2 id="history-title">已封存歷史 <span class="heading-note">核准公開版示範</span></h2>
-        </div>
-        <span class="history-scope-label">訪客本機選輪 · 不影響即時區</span>
-      </div>
-
-      <article class="card history-picker">
-        <div class="picker-copy">
-          <p class="card-eyebrow">LOCAL HISTORY SELECTION</p>
-          <h3>選擇要查看的合成發布版本</h3>
-          <p>要求查看與實際顯示分開。切換選輪只更新本區，不改 live session。</p>
-        </div>
-        <div class="picker-control">
-          <label for="historySelect">本機歷史情境</label>
-          <select id="historySelect">
-            <option value="">選擇合成歷史紀錄</option>
-            <optgroup label="合成歷史紀錄">
-              <option value="DEMO_RUN_TRIAL_001">DEMO_RUN_TRIAL_001 · TRIAL</option>
-              <option value="DEMO_RUN_SPEED_001">DEMO_RUN_SPEED_001 · SPEED</option>
-            </optgroup>
-            <optgroup label="本機狀態案例（無網路請求）">
-              <option value="__empty">索引為空</option>
-              <option value="__notFound">所選紀錄 NOT FOUND</option>
-              <option value="__error">模擬讀取 ERROR</option>
-              <option value="__version">版本不相容</option>
-            </optgroup>
-          </select>
-        </div>
-      </article>
-
-      <div class="selection-status-grid">
-        <article class="card selection-card">
-          <p class="card-eyebrow">REQUESTED</p>
-          <strong id="requestedRun">尚未選擇</strong>
-          <span>你要求查看的合成發布版本</span>
-        </article>
-        <article class="card selection-card actual-card">
-          <p class="card-eyebrow">ACTUAL DISPLAY</p>
-          <strong id="displayedRun">尚未載入</strong>
-          <span>僅在版本和內容相符後顯示</span>
-        </article>
-        <article class="card selection-card state-card">
-          <p class="card-eyebrow">HISTORY STATE</p>
-          <span id="historyStateBadge" class="status-badge status-unknown">NO_SELECTION</span>
-          <span id="historyStateText">選擇一筆合成歷史紀錄。</span>
-        </article>
-      </div>
-
-      <div id="historyEmptyState" class="empty-state card">
-        <div class="empty-symbol" aria-hidden="true">↗</div>
-        <div><h3>選擇合成歷史紀錄</h3><p>尚未選輪。原型不會自動挑最新或第一筆資料。</p></div>
-        <span class="mini-tag synthetic-tag">SYNTHETIC</span>
-      </div>
-
-      <div id="historyContent" hidden>
-        <div class="history-cards-grid">
-          <article class="card run-card">
-            <div class="card-title-row"><div><p class="card-eyebrow">RUN IDENTITY</p><h3>歷史身分</h3></div><span class="mini-tag synthetic-tag">SYNTHETIC</span></div>
-            <dl id="historyIdentity" class="detail-list"></dl>
-          </article>
-          <article class="card run-card storage-card">
-            <div class="card-title-row"><div><p class="card-eyebrow">STORAGE ≠ QUALIFICATION</p><h3>保存與發布</h3></div><span id="storageBadge" class="status-badge status-synthetic">合成 assertion</span></div>
-            <dl id="historyStorage" class="detail-list"></dl>
-          </article>
-          <article class="card run-card quality-card">
-            <div class="card-title-row"><div><p class="card-eyebrow">QUALITY SCOPE</p><h3>資料品質</h3></div><span id="qualityBadge" class="status-badge status-neutral">示範值</span></div>
-            <dl id="historyQuality" class="detail-list"></dl>
-          </article>
-        </div>
-
-        <section class="card analysis-directory" aria-labelledby="analysis-title">
-          <div class="section-subheading analysis-subhead">
-            <div><p class="card-eyebrow">ANALYSIS DIRECTORY · SYNTHETIC</p><h3 id="analysis-title">圖表與分析目錄</h3></div>
-            <span class="subheading-note">計算、語義、資格與物理結果分開</span>
-          </div>
-          <p class="analysis-intro">可用項目只呈現合成 RAW 或由上游 fixture 門控的結果。不可用圖也列出原因；無資料不等於零或通過。</p>
-          <div id="analysisMetrics" class="metric-grid"></div>
-        </section>
-
-        <div class="history-charts-grid">
-          <article class="card chart-card history-chart-card">
-            <div class="card-title-row chart-title-row"><div><p class="card-eyebrow">SYNTHETIC · SAVED RECORDS</p><h3>ACC 三軸 · RAW counts</h3></div><span class="mini-tag synthetic-tag">SYNTHETIC</span></div>
-            <p id="accAxisCaption" class="chart-caption">依來源讀出時刻繪製；軸線不是撞擊方向。</p>
-            <div id="accChart" class="chart-frame empty-chart"></div>
-            <div class="table-wrap"><table class="data-table"><caption>ACC 合成資料表（SYNTHETIC）</caption><thead><tr><th scope="col">Saved ordinal<br><small>非 ADC 序號</small></th><th scope="col">t_read_us</th><th scope="col">X raw counts</th><th scope="col">Y raw counts</th><th scope="col">Z raw counts</th></tr></thead><tbody id="accRows"></tbody></table></div>
-          </article>
-          <article class="card chart-card history-chart-card">
-            <div class="card-title-row chart-title-row"><div><p class="card-eyebrow">SYNTHETIC · SAVED RECORDS</p><h3>HX · RAW counts</h3></div><span class="mini-tag synthetic-tag">SYNTHETIC</span></div>
-            <p id="hxAxisCaption" class="chart-caption">未校正值只表示計數；SAT 保留原旗標。</p>
-            <div id="hxChart" class="chart-frame empty-chart"></div>
-            <div class="table-wrap"><table class="data-table"><caption>HX 合成資料表（SYNTHETIC）</caption><thead><tr><th scope="col">Saved ordinal<br><small>非 ADC 序號</small></th><th scope="col">t_read_us</th><th scope="col">HX raw counts</th><th scope="col">SAT</th><th scope="col">Record kind</th></tr></thead><tbody id="hxRows"></tbody></table></div>
-          </article>
-        </div>
-
-        <article class="card optical-card">
-          <div class="card-title-row"><div><p class="card-eyebrow">SYNTHETIC · GATE EVENTS</p><h3>Optical 事件與上游換算結果</h3></div><span class="mini-tag synthetic-tag">SYNTHETIC</span></div>
-          <p id="opticalSummary" class="optical-summary">尚無合成 Optical 紀錄。</p>
-          <div class="optical-values" id="opticalValues"></div>
-          <p class="chart-footnote">只有合約中的上游 metric fixture 可顯示兩閘區間平均速度；此值不代表接觸速度、精度或材料效果。</p>
-        </article>
-
-        <div class="history-detail-grid">
-          <article class="card chart-card">
-            <div class="card-title-row"><div><p class="card-eyebrow">REPRODUCIBLE PUBLIC PROJECTION</p><h3>合成來源詳情</h3></div><span class="mini-tag synthetic-tag">SYNTHETIC</span></div>
-            <dl id="historyProvenance" class="detail-list"></dl>
-          </article>
-          <article class="card download-card">
-            <div><p class="card-eyebrow">LOCAL DOWNLOAD</p><h3>下載目前顯示版本</h3><p>只下載本機選定的合成公開投影；檔名與內容均保留 synthetic 標記。</p></div>
-            <button id="downloadHistory" class="button button-secondary" type="button" disabled>下載合成紀錄 JSON</button>
-            <span id="downloadStatus" class="download-status">未選擇紀錄。</span>
-          </article>
-        </div>
-      </div>
-    </section>
+    </details>
   </main>
 
   <footer class="page-footer">
     <div class="footer-inner">
       <span class="synthetic-stamp">SYNTHETIC</span>
-      <p>本機原型，不連接任何量測、Google、GitHub 或公開 API。</p>
+      <p>合成示範資料，未連接實際量測或公開 API。</p>
       <p class="footer-contract">Data model: public-history-v1 · public-live-v1</p>
     </div>
   </footer>
